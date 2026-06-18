@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Board Member: Stay in Your Lane</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">AI-powered civic governance simulator</p>
+      <h1>The Board Member</h1>
+      <p class="subtitle">Stay in Your Lane</p>
+      <p class="intro">Listen carefully, stay in the role of a school board member, and earn public trust without promising power you do not have.</p>
+    </header>
+
+    <section id="setupPanel" class="panel setup-panel">
+      <h2>Set up the encounter</h2>
+      <div class="grid three">
+        <label>
+          Constituent
+          <select id="constituentSelect"></select>
+        </label>
+        <label>
+          Location
+          <select id="locationSelect"></select>
+        </label>
+        <label>
+          Attitude
+          <select id="attitudeSelect"></select>
+        </label>
+      </div>
+      <div class="button-row">
+        <button id="randomizeBtn" class="secondary" type="button">Choose For Me</button>
+        <button id="startBtn" type="button">Start Game</button>
+      </div>
+      <p class="helper">Randomize the encounter. Real board members rarely get to choose who approaches them, where it happens, or what mood they are in.</p>
+    </section>
+
+    <section id="gamePanel" class="panel game-panel hidden" aria-live="polite">
+      <div class="game-topline">
+        <div>
+          <p id="choiceSummary" class="choice-summary"></p>
+          <h2 id="turnTitle">Encounter</h2>
+        </div>
+        <div class="meter-card">
+          <span class="meter-label">Public Trust Meter</span>
+          <strong id="meterPercent">50%</strong>
+          <span id="meterName">Wobbly</span>
+        </div>
+      </div>
+
+      <div id="scenarioBox" class="scenario-box"></div>
+      <div id="conversationBox" class="conversation-box"></div>
+
+      <form id="responseForm" class="response-form">
+        <label for="playerResponse">Your response as the board member</label>
+        <textarea id="playerResponse" rows="7" placeholder="Type your response here. Stay human, stay clear, stay in governance lane."></textarea>
+        <div class="button-row">
+          <button id="submitBtn" type="submit">Submit Response</button>
+          <button id="newGameBtn" class="secondary" type="button">New Scenario</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="finalPanel" class="panel final-panel hidden"></section>
+
+    <div id="status" class="status hidden"></div>
+  </main>
+
+  <footer>© 2026 Ben Phillip. All rights reserved.</footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
