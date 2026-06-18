@@ -1,4 +1,4 @@
-# The Board Member: Stay in Your Lane - Prototype
+# The Board Member: Stay in Your Lane
 
 A small Vercel/OpenAI prototype based on Game Bible v1.1.
 
