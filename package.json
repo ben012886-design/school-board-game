@@ -1,11 +1,13 @@
 {
-  "name": "school-board-simulator-prototype",
-  "version": "0.1.0",
+  "name": "school-board-member-simulator",
+  "version": "1.2.0",
   "private": true,
-  "type": "module",
+  "description": "The Board Member: Stay in Your Lane - Vercel/OpenAI browser game",
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel dev"
+    "check": "node --check api/game-turn.js"
   },
-  "dependencies": {}
+  "engines": {
+    "node": ">=18"
+  }
 }

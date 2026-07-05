@@ -1,165 +1,103 @@
-const CONSTITUENTS = [
-  { id: 'mark', name: 'Mark Pearson', label: 'The Homeowner' },
-  { id: 'dana', name: 'Dana Ruiz', label: 'The Lifelong Friend' },
-  { id: 'alicia', name: 'Alicia Grant', label: 'The Teacher-Parent' },
-  { id: 'jamal', name: 'Jamal Brooks', label: 'The Classroom Experience Parent' },
-  { id: 'priya', name: 'Priya Nair', label: 'The High School Junior' },
-  { id: 'brent', name: 'Brent Caldwell', label: 'The Eager Ideas Parent' },
-  { id: 'emily', name: 'Emily Tran', label: 'The New-to-the-Board Parent' },
-  { id: 'marcus', name: 'Marcus Bell', label: 'The Teaching-and-Learning Parent' }
-];
+const options = {
+  constituents: [
+    { id: "mark_pearson", name: "Mark Pearson", label: "Mark Pearson - The Homeowner" },
+    { id: "dana_ruiz", name: "Dana Ruiz", label: "Dana Ruiz - The Lifelong Friend" },
+    { id: "alicia_grant", name: "Alicia Grant", label: "Alicia Grant - The Teacher-Parent" },
+    { id: "jamal_brooks", name: "Jamal Brooks", label: "Jamal Brooks - The Classroom Experience Parent" },
+    { id: "priya_nair", name: "Priya Nair", label: "Priya Nair - The High School Junior" },
+    { id: "brent_caldwell", name: "Brent Caldwell", label: "Brent Caldwell - The Eager Ideas Parent" },
+    { id: "emily_tran", name: "Emily Tran", label: "Emily Tran - The New-to-the-Board Parent" },
+    { id: "marcus_bell", name: "Marcus Bell", label: "Marcus Bell - The Teaching-and-Learning Parent" }
+  ],
+  locations: [
+    { id: "board_chambers", name: "Board Chambers", label: "Board Chambers - 2 responses" },
+    { id: "grocery_store", name: "Grocery Store", label: "Grocery Store - 3 responses" },
+    { id: "coffee_shop", name: "Coffee Shop", label: "Coffee Shop - 5 responses" }
+  ],
+  attitudes: [
+    { id: "negative", name: "Negative", label: "Negative - skeptical or frustrated" },
+    { id: "neutral", name: "Neutral", label: "Neutral - concerned but open" },
+    { id: "positive", name: "Positive", label: "Positive - supportive or optimistic" }
+  ]
+};
 
-const LOCATIONS = [
-  { id: 'board_chambers', name: 'Board Chambers', turns: 2, meaning: 'Respect under pressure' },
-  { id: 'grocery_store', name: 'Grocery Store', turns: 3, meaning: 'Boundary plus helpfulness' },
-  { id: 'coffee_shop', name: 'Coffee Shop', turns: 5, meaning: 'Trust through clarity' }
-];
+let gameState = null;
+let previousResponses = [];
 
-const ATTITUDES = [
-  { id: 'negative', name: 'Negative', weight: '70% role discipline / 30% persuasion' },
-  { id: 'neutral', name: 'Neutral', weight: '60% role discipline / 40% persuasion' },
-  { id: 'positive', name: 'Positive', weight: '50% role discipline / 50% persuasion' }
-];
+const el = {
+  setupPanel: document.getElementById("setupPanel"),
+  gamePanel: document.getElementById("gamePanel"),
+  finalPanel: document.getElementById("finalPanel"),
+  constituentSelect: document.getElementById("constituentSelect"),
+  locationSelect: document.getElementById("locationSelect"),
+  attitudeSelect: document.getElementById("attitudeSelect"),
+  randomizeBtn: document.getElementById("randomizeBtn"),
+  startBtn: document.getElementById("startBtn"),
+  submitBtn: document.getElementById("submitBtn"),
+  playAgainBtn: document.getElementById("playAgainBtn"),
+  trustPercent: document.getElementById("trustPercent"),
+  trustLabel: document.getElementById("trustLabel"),
+  meterFill: document.getElementById("meterFill"),
+  turnChip: document.getElementById("turnChip"),
+  sceneText: document.getElementById("sceneText"),
+  speakerName: document.getElementById("speakerName"),
+  speakerContext: document.getElementById("speakerContext"),
+  constituentText: document.getElementById("constituentText"),
+  feedbackPanel: document.getElementById("feedbackPanel"),
+  lastScore: document.getElementById("lastScore"),
+  scoreExplanation: document.getElementById("scoreExplanation"),
+  flagsList: document.getElementById("flagsList"),
+  playerResponse: document.getElementById("playerResponse"),
+  previousPanel: document.getElementById("previousPanel"),
+  previousResponses: document.getElementById("previousResponses"),
+  finalResult: document.getElementById("finalResult"),
+  finalScore: document.getElementById("finalScore"),
+  privateThought: document.getElementById("privateThought"),
+  reelectionVote: document.getElementById("reelectionVote"),
+  whyVote: document.getElementById("whyVote"),
+  playerFeedback: document.getElementById("playerFeedback"),
+  loadingOverlay: document.getElementById("loadingOverlay")
+};
 
-let state = null;
-
-const $ = (id) => document.getElementById(id);
-
-function fillSelect(select, items, render) {
-  select.innerHTML = items.map(item => `<option value="${item.id}">${render(item)}</option>`).join('');
-}
-
-function findById(list, id) {
-  return list.find(item => item.id === id);
-}
-
-function escapeHtml(value = '') {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
-function showStatus(message, sticky = false) {
-  const status = $('status');
-  status.textContent = message;
-  status.classList.remove('hidden');
-  if (!sticky) {
-    window.clearTimeout(showStatus.timer);
-    showStatus.timer = window.setTimeout(() => status.classList.add('hidden'), 2800);
+function populateSelect(select, items) {
+  select.innerHTML = "";
+  for (const item of items) {
+    const opt = document.createElement("option");
+    opt.value = item.id;
+    opt.textContent = item.label;
+    select.appendChild(opt);
   }
 }
 
-function setBusy(isBusy) {
-  $('startBtn').disabled = isBusy;
-  $('submitBtn').disabled = isBusy;
-  $('randomizeBtn').disabled = isBusy;
-  $('playerResponse').disabled = isBusy;
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
 }
 
-function getSelections() {
-  const constituent = findById(CONSTITUENTS, $('constituentSelect').value);
-  const location = findById(LOCATIONS, $('locationSelect').value);
-  const attitude = findById(ATTITUDES, $('attitudeSelect').value);
-  return { constituent, location, attitude };
+function getSetup() {
+  return {
+    constituentId: el.constituentSelect.value,
+    locationId: el.locationSelect.value,
+    attitudeId: el.attitudeSelect.value
+  };
 }
 
-function randomize() {
-  $('constituentSelect').value = CONSTITUENTS[Math.floor(Math.random() * CONSTITUENTS.length)].id;
-  $('locationSelect').value = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)].id;
-  $('attitudeSelect').value = ATTITUDES[Math.floor(Math.random() * ATTITUDES.length)].id;
+function setLoading(isLoading) {
+  el.loadingOverlay.classList.toggle("hidden", !isLoading);
+  el.startBtn.disabled = isLoading;
+  el.submitBtn.disabled = isLoading;
+  el.randomizeBtn.disabled = isLoading;
 }
 
-function meterLabel(percent) {
-  if (percent >= 80) return 'Trusted Governor';
-  if (percent >= 60) return 'Mostly Credible';
-  if (percent >= 40) return 'Wobbly';
-  if (percent >= 21) return 'Losing Confidence';
-  return 'Trust Broken';
+function showError(message) {
+  alert(message || "Something went wrong. Check the Vercel function logs for details.");
 }
 
-function updateMeter(percent = 50, label) {
-  const rounded = Math.max(0, Math.min(100, Math.round(percent)));
-  $('meterPercent').textContent = `${rounded}%`;
-  $('meterName').textContent = label || meterLabel(rounded);
-}
-
-function renderScenario(data) {
-  $('scenarioBox').innerHTML = `
-    <article class="card">
-      <h3>Scene</h3>
-      <p>${escapeHtml(data.scene)}</p>
-    </article>
-    <article class="card">
-      <h3>Constituent</h3>
-      <p class="dialogue">${escapeHtml(data.constituentDialogue)}</p>
-    </article>
-  `;
-}
-
-function scoreClass(score) {
-  if (score >= 6) return 'good';
-  if (score >= 0) return 'warn';
-  return 'bad';
-}
-
-function renderConversation() {
-  const history = state?.history || [];
-  $('conversationBox').innerHTML = history.map(entry => {
-    if (entry.role === 'player') {
-      return `<article class="card turn-card player"><h3>You</h3><p>${escapeHtml(entry.text)}</p></article>`;
-    }
-    if (entry.role === 'constituent') {
-      return `<article class="card turn-card"><h3>${escapeHtml(state.selections.constituent.name)}</h3><p class="dialogue">${escapeHtml(entry.text)}</p></article>`;
-    }
-    if (entry.role === 'feedback') {
-      const flags = Array.isArray(entry.flags) && entry.flags.length
-        ? `<p class="meta-line"><strong>Flags:</strong> ${entry.flags.map(escapeHtml).join(' · ')}</p>`
-        : '';
-      return `<article class="card turn-card feedback ${scoreClass(entry.score)}"><h3>Score: ${entry.score > 0 ? '+' : ''}${entry.score}</h3><p>${escapeHtml(entry.explanation)}</p><p class="meta-line">Public Trust Meter: ${Math.round(entry.runningPercent)}% — ${escapeHtml(entry.meterLabel)}</p>${flags}</article>`;
-    }
-    return '';
-  }).join('');
-}
-
-function renderFinal(final) {
-  $('gamePanel').classList.add('hidden');
-  $('finalPanel').classList.remove('hidden');
-  $('finalPanel').innerHTML = `
-    <h2>Final Summary</h2>
-    <p class="big-score">${Math.round(final.finalPercent)}%</p>
-    <div class="final-grid">
-      <article class="card"><h3>Result</h3><p>${escapeHtml(final.resultLabel)}</p></article>
-      <article class="card"><h3>Reelection Vote</h3><p>${escapeHtml(final.reelectionVote)}</p></article>
-    </div>
-    <article class="card"><h3>Constituent's Private Thought</h3><p>${escapeHtml(final.privateThought)}</p></article>
-    <article class="card"><h3>Why or Why Not</h3><p>${escapeHtml(final.why)}</p></article>
-    <article class="card"><h3>Player Feedback</h3><p>${escapeHtml(final.playerFeedback)}</p></article>
-    <div class="button-row"><button id="finalNewGameBtn" type="button">Play Another Scenario</button></div>
-  `;
-  $('finalNewGameBtn').addEventListener('click', resetGame);
-}
-
-function resetGame() {
-  state = null;
-  $('setupPanel').classList.remove('hidden');
-  $('gamePanel').classList.add('hidden');
-  $('finalPanel').classList.add('hidden');
-  $('conversationBox').innerHTML = '';
-  $('scenarioBox').innerHTML = '';
-  $('playerResponse').value = '';
-  updateMeter(50, 'Wobbly');
-}
-
-async function apiCall(payload) {
-  const response = await fetch('/api/game-turn', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+async function postGame(payload) {
+  const response = await fetch("/api/game-turn", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.error || `Request failed with status ${response.status}`);
@@ -167,101 +105,153 @@ async function apiCall(payload) {
   return data;
 }
 
-async function startGame() {
-  const selections = getSelections();
-  setBusy(true);
-  showStatus('Generating the encounter...', true);
+function updateTrust(percent, label) {
+  const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+  el.trustPercent.textContent = `${safePercent}%`;
+  el.trustLabel.textContent = label || "Wobbly";
+  el.meterFill.style.width = `${safePercent}%`;
+}
 
-  try {
-    const data = await apiCall({ action: 'start', selections });
-    state = {
-      selections,
-      scene: data.scene,
-      constituentDialogue: data.constituentDialogue,
-      turn: 0,
-      maxTurns: selections.location.turns,
-      earnedScore: 0,
-      history: [{ role: 'constituent', text: data.constituentDialogue }]
-    };
+function renderGame() {
+  if (!gameState) return;
+  el.sceneText.textContent = gameState.scene || "";
+  el.speakerName.textContent = gameState.constituentName || gameState.setup?.constituentName || "Constituent";
+  el.speakerContext.textContent = gameState.setup?.constituentArchetype || "";
+  el.constituentText.textContent = gameState.constituentDialogue || gameState.constituentReply || "";
+  updateTrust(gameState.publicTrustPercent, gameState.meterLabel);
+  el.turnChip.textContent = `Turn ${gameState.turnNumber || 0} of ${gameState.maxTurns || 0}`;
+}
 
-    $('setupPanel').classList.add('hidden');
-    $('finalPanel').classList.add('hidden');
-    $('gamePanel').classList.remove('hidden');
-    $('choiceSummary').textContent = `${selections.constituent.name} (${selections.constituent.label}) · ${selections.location.name} · ${selections.attitude.name}`;
-    $('turnTitle').textContent = `Turn 1 of ${state.maxTurns}`;
-    renderScenario(data);
-    renderConversation();
-    updateMeter(50, 'Wobbly');
-    $('playerResponse').focus();
-    $('status').classList.add('hidden');
-  } catch (error) {
-    showStatus(error.message || 'Something went wrong.');
-  } finally {
-    setBusy(false);
+function renderFeedback(result) {
+  el.feedbackPanel.classList.remove("hidden");
+  el.lastScore.textContent = result.score > 0 ? `+${result.score}` : `${result.score}`;
+  el.scoreExplanation.textContent = result.scoreExplanation || "";
+  el.flagsList.innerHTML = "";
+  for (const flag of result.flags || []) {
+    const li = document.createElement("li");
+    li.textContent = flag;
+    el.flagsList.appendChild(li);
   }
 }
 
-async function submitResponse(event) {
-  event.preventDefault();
-  if (!state) return;
+function renderPreviousResponses() {
+  el.previousResponses.innerHTML = "";
+  el.previousPanel.classList.toggle("hidden", previousResponses.length === 0);
+  for (const item of previousResponses) {
+    const div = document.createElement("div");
+    div.className = "previous-response";
+    const score = item.score > 0 ? `+${item.score}` : `${item.score}`;
+    div.innerHTML = `<strong>Response ${item.number} (${score})</strong><p></p>`;
+    div.querySelector("p").textContent = item.text;
+    el.previousResponses.appendChild(div);
+  }
+}
 
-  const text = $('playerResponse').value.trim();
-  if (!text) {
-    showStatus('Type a response first.');
+function renderFinal(summary) {
+  el.gamePanel.classList.add("hidden");
+  el.finalPanel.classList.remove("hidden");
+  el.finalResult.textContent = summary.resultLabel || "Final Result";
+  el.finalScore.textContent = summary.finalScore || "0%";
+  el.privateThought.textContent = summary.constituentPrivateThought || "";
+  el.reelectionVote.textContent = summary.reelectionVote || "";
+  el.whyVote.textContent = summary.whyOrWhyNot || "";
+  el.playerFeedback.textContent = summary.playerFeedback || "";
+}
+
+async function startGame() {
+  setLoading(true);
+  try {
+    previousResponses = [];
+    gameState = await postGame({ action: "start", setup: getSetup() });
+    el.setupPanel.classList.add("hidden");
+    el.finalPanel.classList.add("hidden");
+    el.gamePanel.classList.remove("hidden");
+    el.feedbackPanel.classList.add("hidden");
+    el.previousPanel.classList.add("hidden");
+    el.playerResponse.value = "";
+    renderGame();
+  } catch (error) {
+    showError(error.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function submitResponse() {
+  const playerText = el.playerResponse.value.trim();
+  if (!playerText) {
+    el.playerResponse.focus();
     return;
   }
 
-  state.history.push({ role: 'player', text });
-  $('playerResponse').value = '';
-  renderConversation();
-  setBusy(true);
-  showStatus('Scoring and generating the reply...', true);
-
+  setLoading(true);
   try {
-    const data = await apiCall({ action: 'respond', state, playerResponse: text });
-    state.turn += 1;
-    state.earnedScore += Number(data.score || 0);
-
-    state.history.push({
-      role: 'feedback',
-      score: Number(data.score || 0),
-      explanation: data.scoreExplanation || '',
-      runningPercent: data.runningPercent,
-      meterLabel: data.meterLabel,
-      flags: data.flags || []
+    const result = await postGame({
+      action: "turn",
+      state: gameState,
+      playerResponse: playerText
     });
 
-    if (data.constituentReply) {
-      state.history.push({ role: 'constituent', text: data.constituentReply });
-    }
+    previousResponses.push({
+      number: (gameState.turnNumber || 0) + 1,
+      text: playerText,
+      score: result.score
+    });
 
-    updateMeter(data.runningPercent, data.meterLabel);
-    renderConversation();
+    gameState = {
+      ...gameState,
+      ...result,
+      setup: gameState.setup,
+      scene: gameState.scene,
+      constituentName: gameState.constituentName,
+      constituentDialogue: result.constituentReply || gameState.constituentDialogue,
+      history: result.history || gameState.history
+    };
 
-    if (data.isFinal && data.finalSummary) {
-      renderFinal(data.finalSummary);
+    el.playerResponse.value = "";
+    renderFeedback(result);
+    renderPreviousResponses();
+    updateTrust(result.publicTrustPercent, result.meterLabel);
+    el.turnChip.textContent = `Turn ${result.turnNumber} of ${result.maxTurns}`;
+
+    if (result.phase === "final") {
+      renderFinal(result.finalSummary || {});
     } else {
-      $('turnTitle').textContent = `Turn ${state.turn + 1} of ${state.maxTurns}`;
-      $('playerResponse').focus();
+      renderGame();
     }
-
-    $('status').classList.add('hidden');
   } catch (error) {
-    showStatus(error.message || 'Something went wrong.');
-    renderConversation();
+    showError(error.message);
   } finally {
-    setBusy(false);
+    setLoading(false);
   }
 }
 
+function resetGame() {
+  gameState = null;
+  previousResponses = [];
+  el.finalPanel.classList.add("hidden");
+  el.gamePanel.classList.add("hidden");
+  el.setupPanel.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function init() {
-  fillSelect($('constituentSelect'), CONSTITUENTS, item => `${item.name} — ${item.label}`);
-  fillSelect($('locationSelect'), LOCATIONS, item => `${item.name} (${item.turns} turns)`);
-  fillSelect($('attitudeSelect'), ATTITUDES, item => `${item.name} (${item.weight})`);
-  $('randomizeBtn').addEventListener('click', randomize);
-  $('startBtn').addEventListener('click', startGame);
-  $('responseForm').addEventListener('submit', submitResponse);
-  $('newGameBtn').addEventListener('click', resetGame);
+  populateSelect(el.constituentSelect, options.constituents);
+  populateSelect(el.locationSelect, options.locations);
+  populateSelect(el.attitudeSelect, options.attitudes);
+
+  el.randomizeBtn.addEventListener("click", () => {
+    el.constituentSelect.value = randomItem(options.constituents).id;
+    el.locationSelect.value = randomItem(options.locations).id;
+    el.attitudeSelect.value = randomItem(options.attitudes).id;
+  });
+
+  el.startBtn.addEventListener("click", startGame);
+  el.submitBtn.addEventListener("click", submitResponse);
+  el.playAgainBtn.addEventListener("click", resetGame);
+  el.playerResponse.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") submitResponse();
+  });
 }
 
 init();

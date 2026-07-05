@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/game-turn.js": {
+      "maxDuration": 30
+    }
+  }
+}
