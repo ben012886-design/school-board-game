@@ -1,113 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Board Member: Stay in Your Lane</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="app-shell">
-    <section class="hero card">
+  <div class="page-shell">
+    <header class="hero-card">
       <p class="eyebrow">AI civic governance simulator</p>
-      <h1>The Board Member:<br><span>Stay in Your Lane</span></h1>
-      <p class="lede">Listen carefully, tell the truth about your role, keep students centered, and try to earn public trust without promising power you do not have.</p>
-    </section>
+      <h1>The Board Member: Stay in Your Lane</h1>
+      <p class="instruction">Listen carefully, respond as one board member, stay in your lane, and earn public trust without promising power you do not have.</p>
+      <p class="phone-note"><strong>On your phone, for ease, you can use your keyboard's microphone option so you do not have to type out responses to make it more authentic.</strong></p>
+    </header>
 
-    <section id="setupPanel" class="card setup-panel">
-      <h2>Set up the encounter</h2>
-      <p class="panel-copy">Choose who approaches you, where it happens, and what mood they are in. Or let civic chaos choose for you.</p>
+    <main id="app" aria-live="polite"></main>
 
-      <div class="setup-grid">
-        <label for="constituentSelect">
-          Constituent
-          <select id="constituentSelect"></select>
-        </label>
-        <label for="locationSelect">
-          Location
-          <select id="locationSelect"></select>
-        </label>
-        <label for="attitudeSelect">
-          Attitude
-          <select id="attitudeSelect"></select>
-        </label>
-      </div>
-
-      <div class="button-row">
-        <button id="randomizeBtn" class="secondary" type="button">Choose For Me</button>
-        <button id="startBtn" type="button">Start Game</button>
-      </div>
-      <p class="helper">Randomize the encounter. Real board members rarely get to choose who approaches them, where it happens, or what mood they are in.</p>
-    </section>
-
-    <section id="gamePanel" class="game-panel hidden">
-      <div class="status-bar card">
-        <div>
-          <p class="eyebrow">Public Trust Meter</p>
-          <div class="meter-line">
-            <strong id="trustPercent">50%</strong>
-            <span id="trustLabel">Wobbly</span>
-          </div>
-          <div class="meter-track" aria-hidden="true"><div id="meterFill" class="meter-fill"></div></div>
-        </div>
-        <div class="turn-chip" id="turnChip">Turn 0 of 0</div>
-      </div>
-
-      <article class="card scene-card">
-        <h2>Scene</h2>
-        <p id="sceneText"></p>
-      </article>
-
-      <article class="card speaker-card">
-        <div class="speaker-header">
-          <h2 id="speakerName">Constituent</h2>
-          <span id="speakerContext"></span>
-        </div>
-        <p id="constituentText" class="quote"></p>
-      </article>
-
-      <section id="feedbackPanel" class="card feedback-panel hidden">
-        <h2>Last response score</h2>
-        <div class="score-row"><span id="lastScore" class="score-pill">0</span><span id="scoreExplanation"></span></div>
-        <ul id="flagsList" class="flags-list"></ul>
-      </section>
-
-      <section id="responsePanel" class="card response-panel">
-        <label for="playerResponse">Your response as the board member</label>
-        <textarea id="playerResponse" placeholder="Type your response here." rows="7"></textarea>
-        <div class="button-row right">
-          <button id="submitBtn" type="button">Submit Response</button>
-        </div>
-      </section>
-
-      <section id="previousPanel" class="card previous-panel hidden">
-        <h2>Your previous responses</h2>
-        <div id="previousResponses"></div>
-      </section>
-    </section>
-
-    <section id="finalPanel" class="card final-panel hidden">
-      <p class="eyebrow">Final Summary</p>
-      <h2 id="finalResult">Governance Win</h2>
-      <div class="final-score" id="finalScore">84%</div>
-      <dl class="summary-list">
-        <div><dt>Constituent's private thought</dt><dd id="privateThought"></dd></div>
-        <div><dt>Reelection vote</dt><dd id="reelectionVote"></dd></div>
-        <div><dt>Why or why not</dt><dd id="whyVote"></dd></div>
-        <div><dt>Player feedback</dt><dd id="playerFeedback"></dd></div>
-      </dl>
-      <div class="button-row">
-        <button id="playAgainBtn" type="button">Play Again</button>
-      </div>
-    </section>
-  </main>
-
-  <div id="loadingOverlay" class="loading-overlay hidden" role="status" aria-live="polite">
-    <div class="spinner"></div>
-    <p>Thinking like a constituent in a checkout line...</p>
+    <footer class="footer">
+      © 2026 Ben Phillip. All rights reserved.
+    </footer>
   </div>
 
-  <footer>&copy; 2026 Ben Phillip. All rights reserved.</footer>
   <script src="script.js"></script>
 </body>
 </html>
